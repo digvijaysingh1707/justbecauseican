@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For You 🎈</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&display=swap');
+        
+        body { background-color: #fff5f5; font-family: 'JetBrains Mono', monospace; margin: 0; padding: 0; overflow-x: hidden; }
+        
+        .page { display: none; min-height: 100vh; width: 100%; opacity: 0; transition: opacity 0.5s ease-in; }
+        .page.active { display: flex !important; flex-direction: column; opacity: 1; }
+
+        .reveal { opacity: 0; transform: translateY(30px); transition: all 0.6s ease-out; }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(-0.5deg); }
+            50% { transform: translateY(-10px) rotate(0.5deg); }
+            100% { transform: translateY(0px) rotate(-0.5deg); }
+        }
+
+        .polaroid {
+            background: white; padding: 12px 12px 55px 12px;
+            box-shadow: 0 10px 30px rgba(251, 113, 133, 0.1); 
+            animation: float 4s ease-in-out infinite;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; perspective: 1000px;
+            width: 250px; height: 260px; margin: auto;
+        }
+
+        .polaroid:hover .flip-inner, .polaroid.is-flipped .flip-inner { transform: rotateY(180deg); }
+        .polaroid:hover { transform: scale(1.05) rotate(0deg) !important; box-shadow: 0 20px 40px rgba(251, 113, 133, 0.25); z-index: 50; }
+
+        /* Disable hover for Big Reveal card */
+        .big-polaroid { width: 320px; height: 420px; padding: 15px 15px 80px 15px; }
+        .big-polaroid:hover .flip-inner { transform: none !important; }
+        .big-polaroid.is-flipped .flip-inner { transform: rotateY(180deg) !important; }
+
+        .flip-inner { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d; }
+        .flip-front, .flip-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        
+        /* Front/Back styling */
+        .flip-front { background: #fffbff; border: 2px dashed #fecaca; color: #f43f5e; font-weight: bold; font-size: 0.8rem; }
+        .flip-back { background: #fff1f2; transform: rotateY(180deg); border: 1px solid #fecaca; padding: 8px; }
+        
+        .img-content { width: 100%; height: 85%; object-fit: cover; border-radius: 2px; }
+        .caption { font-size: 10px; font-weight: bold; color: #e11d48; margin-top: 8px; text-transform: uppercase; }
+        .badge { font-size: 9px; color: #fb7185; font-weight: 700; position: absolute; bottom: 15px; width: 100%; left: 0; text-align: center; letter-spacing: 1px; }
+
+        .peel-container { position: relative; width: 100%; max-width: 500px; height: 100px; background: #fff; border: 2px solid #fee2e2; overflow: hidden; cursor: pointer; border-radius: 16px; margin: auto; transition: 0.3s; }
+        .fact-text { padding: 20px; font-size: 0.8rem; color: #475569; line-height: 1.6; display: flex; align-items: center; justify-content: center; height: 100%; text-align: center; width: 100%; }
+        .peel-cover { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #fecaca; color: #be185d; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.8rem; transition: transform 0.8s ease; transform-origin: top right; z-index: 2; }
+        .peel-container.peeled .peel-cover { transform: rotate(-115deg) translateX(-110%); }
+
+        .menu-btn { background: white; border: 3px solid #fee2e2; padding: 2.5rem; border-radius: 2.5rem; transition: 0.4s; cursor: pointer; text-align: center; }
+        .menu-btn:hover { border-color: #f43f5e; transform: scale(1.05) translateY(-5px); box-shadow: 0 20px 40px rgba(244, 63, 94, 0.15); }
+        .no-btn-style { background: white; border: 3px solid #fee2e2; padding: 0.75rem 2rem; border-radius: 9999px; color: #d1d5db; font-weight: bold; transition: 0.3s; }
+    </style>
+</head>
+<body>
+
+    <div id="page-landing" class="page items-center justify-center text-center p-6">
+        <div class="max-w-md">
+            <div class="text-6xl mb-6">✨</div>
+            <h1 class="text-3xl font-extrabold text-rose-600 mb-4 tracking-tighter uppercase italic">Access Requested</h1>
+            <p class="text-gray-500 mb-10 font-medium">Access is requested by a certain admirer. Do you wish to proceed and view the data?</p>
+            <div class="flex flex-col items-center gap-6">
+                <button onclick="showPage('page-menu')" class="bg-rose-500 text-white px-12 py-5 rounded-full font-bold shadow-xl hover:bg-rose-600 transition active:scale-90 uppercase tracking-widest">YES, OPEN</button>
+                <button onmouseover="dodge(this)" class="no-btn-style text-xs">No, skip it</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="page-menu" class="page items-center justify-center p-6">
+        <h2 class="text-2xl font-black text-rose-700 mb-12 uppercase tracking-widest reveal visible">Pick a path 🍭</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-2xl">
+            <div onclick="showPage('page-u-like')" class="menu-btn reveal visible">
+                <span class="text-5xl block mb-4">📸</span>
+                <p class="font-black text-rose-600 uppercase text-lg">Your Favs</p>
+                <p class="text-xs text-rose-300 mt-2 font-bold tracking-widest">Things U Like</p>
+            </div>
+            <div onclick="showPage('page-i-like')" class="menu-btn reveal visible">
+                <span class="text-5xl block mb-4">🦕</span>
+                <p class="font-black text-rose-600 uppercase text-lg">My Favs</p>
+                <p class="text-xs text-rose-300 mt-2 font-bold tracking-widest">Things I Like</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="page-u-like" class="page p-6 py-12">
+        <div class="max-w-4xl mx-auto w-full text-center">
+            <button onclick="showPage('page-menu')" class="mb-12 text-rose-500 font-black text-xs uppercase tracking-widest hover:text-rose-700 transition">← BACK</button>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-y-16 gap-x-8">
+                
+                <div class="polaroid reveal" onclick="this.classList.toggle('is-flipped')">
+                    <div class="flip-inner"><div class="flip-front">FLOWER 🌸</div><div class="flip-back">
+                        <img src="https://i.ibb.co/NgxwyzXY/image.png" class="img-content" alt="Lotus">
+                        <p class="caption">White Lotus</p>
+                    </div></div><span class="badge uppercase">FAV FLOWER</span>
+                </div>
+
+                <div class="polaroid reveal" onclick="this.classList.toggle('is-flipped')">
+                    <div class="flip-inner"><div class="flip-front">PLACE 🏔️</div><div class="flip-back">
+                        <img src="https://i.ibb.co/7dDFKyBb/image.png" class="img-content" alt="Rishikesh">
+                        <p class="caption">Rishikesh</p>
+                    </div></div><span class="badge uppercase">FAV PLACE</span>
+                </div>
+
+                <div class="polaroid reveal" onclick="this.classList.toggle('is-flipped')">
+                    <div class="flip-inner"><div class="flip-front">ANIMAL 🐘</div><div class="flip-back">
+                        <img src="https://i.ibb.co/q37h0czm/image.png" class="img-content" alt="Elephant">
+                        <p class="caption">Baby Elephant</p>
+                    </div></div><span class="badge uppercase">FAV ANIMAL</span>
+                </div>
+
+                <div class="polaroid reveal" onclick="this.classList.toggle('is-flipped')">
+                    <div class="flip-inner"><div class="flip-front">SONG 🎵</div><div class="flip-back">
+                        <img src="https://i.ibb.co/bRPSs5YR/image.png" class="img-content" alt="Song Theme">
+                        <p class="caption">Sab sunti h</p>
+                    </div></div><span class="badge uppercase">FAV SONG</span>
+                </div>
+
+                <div class="polaroid reveal" onclick="this.classList.toggle('is-flipped')">
+                    <div class="flip-inner"><div class="flip-front">GENRE 🎬</div><div class="flip-back">
+                        <img src="https://i.ibb.co/zWftwxp6/image.png" class="img-content" alt="RomCom">
+                        <p class="caption">Feel Good Rom-Coms</p>
+                    </div></div><span class="badge uppercase">FAV GENRE</span>
+                </div>
+
+                <div class="polaroid reveal" onclick="this.classList.toggle('is-flipped')">
+                    <div class="flip-inner"><div class="flip-front">SWEET 🍬</div><div class="flip-back">
+                        <img src="https://i.ibb.co/7twxHrmW/image.png" class="img-content" alt="Ghevarpaglu">
+                        <p class="caption">Ghevarpaglu</p>
+                    </div></div><span class="badge uppercase">FAV SWEET</span>
+                </div>
+
+                <div class="polaroid reveal" onclick="this.classList.toggle('is-flipped')">
+                    <div class="flip-inner"><div class="flip-front">SNACK 🍪</div><div class="flip-back">
+                        <img src="https://i.ibb.co/1fL7qyCQ/image.png" class="img-content" alt="Wafers">
+                        <p class="caption">Wafers & Brownies</p>
+                    </div></div><span class="badge uppercase">FAV SNACK</span>
+                </div>
+
+                <div class="polaroid reveal" onclick="this.classList.toggle('is-flipped')">
+                    <div class="flip-inner"><div class="flip-front">FRUIT 🍒</div><div class="flip-back">
+                        <img src="https://i.ibb.co/TB3yCmX2/image.png" class="img-content" alt="Lychee">
+                        <p class="caption">Lychee</p>
+                    </div></div><span class="badge uppercase">FAV FRUIT</span>
+                </div>
+                <div class="md:col-span-2 reveal space-y-8 mt-16">
+                    <div class="peel-container shadow-sm" onclick="this.classList.toggle('peeled')"><div class="peel-cover">FUN FACT</div><div class="fact-text text-xs uppercase">Sher loves her Little Brother. Her Favorite time was Childhood with her little brother.</div></div>
+                    <div class="peel-container shadow-sm" onclick="this.classList.toggle('peeled')"><div class="peel-cover">FUN FACT</div><div class="fact-text text-xs uppercase">Ye Ladki ghanto ghanto tak garba kar sakti, even when her legs cry her to stop. True Garbapaglu.</div></div>
+                    <div class="peel-container shadow-sm" onclick="this.classList.toggle('peeled')"><div class="peel-cover">FUN FACT</div><div class="fact-text text-xs uppercase">Everything needs to be ironed. Even the hanky!</div></div>
+                    <div class="peel-container shadow-sm" onclick="this.classList.toggle('peeled')"><div class="peel-cover">FUN FACT</div><div class="fact-text text-xs uppercase">Loves neat places and engraved pens, pencils and diaries!</div></div>
+                    <div class="peel-container shadow-sm" onclick="this.classList.toggle('peeled')"><div class="peel-cover">FUN FACT</div><div class="fact-text text-xs uppercase">She loves girlie stuffs, shopping sprees, and her lip bam</div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="page-i-like" class="page items-center justify-center p-6 text-center">
+        <div class="reveal">
+            <h2 class="text-2xl font-black text-rose-700 mb-12 uppercase tracking-widest italic">My Absolute Favorite</h2>
+            <div class="polaroid big-polaroid" onclick="this.classList.toggle('is-flipped')">
+                <div class="flip-inner">
+                    <div class="flip-front text-xl">🤫</div>
+                    <div class="flip-back">
+                        <img src="https://i.ibb.co/35hRzxWV/t3.jpg" class="img-content" alt="You">
+                        <p class="mt-4 text-rose-600 font-bold text-sm leading-relaxed">You, OFCOURSE YOU,<br>havent I made that adamantly clear?</p>
+                    </div>
+                </div>
+                <span class="badge text-xs uppercase tracking-widest">My One Favorite</span>
+            </div>
+            <button onclick="showPage('page-menu')" class="mt-16 text-rose-500 font-black border-b-2 border-rose-200 uppercase text-[10px] tracking-widest">GO BACK</button>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', () => { showPage('page-landing'); });
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry, index) => {
+                if (entry.isIntersecting) { setTimeout(() => { entry.target.classList.add('visible'); }, index * 100); }
+            });
+        }, { threshold: 0.1 });
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => { p.classList.remove('active'); p.style.opacity = "0"; });
+            const target = document.getElementById(pageId);
+            if (target) {
+                target.classList.add('active');
+                setTimeout(() => {
+                    target.style.opacity = "1";
+                    target.querySelectorAll('.reveal').forEach(el => { el.classList.remove('visible'); observer.observe(el); });
+                }, 50);
+                window.scrollTo(0,0);
+            }
+        }
+        function dodge(btn) {
+            btn.style.position = 'fixed';
+            btn.style.left = Math.random() * (window.innerWidth - 150) + 'px';
+            btn.style.top = Math.random() * (window.innerHeight - 100) + 'px';
+        }
+    </script>
+</body>
+</html>
